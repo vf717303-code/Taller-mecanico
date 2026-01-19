@@ -4,3 +4,7 @@ __pycache__/
 *.pyd
 .env
 venv/
+
+git add .gitignore
+git commit -m "Agrega .gitignore"
+git push

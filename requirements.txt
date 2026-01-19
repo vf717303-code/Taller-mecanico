@@ -1,2 +1,5 @@
-flask
-gunicorn
+psycopg2-bynary
+
+git add .
+git commit -m "Conexión PostgreSQL Render"
+git push
