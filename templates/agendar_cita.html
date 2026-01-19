@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Agendar Cita - Taller</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #1e1e1e;
+            display: flex;
+        }
+
+        /* -------- MENÚ LATERAL -------- */
+
+        .sidebar {
+            width: 230px;
+            background-color: #2b2b2b;
+            padding-top: 30px;
+        }
+
+        .sidebar h1 {
+            color: #ff9800;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 40px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #3a3a3a;
+        }
+
+        /* -------- CONTENIDO -------- */
+
+        .contenido {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .form-box {
+            background-color: #2b2b2b;
+            padding: 35px 45px;
+            border-radius: 12px;
+            width: 420px;
+            box-shadow: 0 0 18px rgba(0,0,0,0.6);
+        }
+
+        .form-box h2 {
+            text-align: center;
+            color: #ff9800;
+            margin-bottom: 25px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: none;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff9800;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #e68900;
+        }
+
+        .volver {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .volver a {
+            color: #ff9800;
+            text-decoration: none;
+        }
+
+        .volver a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- MENÚ -->
+    <div class="sidebar">
+        <h1>TALLER</h1>
+
+        <a href="/inicio">Inicio</a>
+        <a href="/mis_citas">Mis citas</a>
+        <a href="/historial">Historial</a>
+        <a href="/salir">Cerrar sesión</a>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="contenido">
+        <div class="form-box">
+            <h2>Agendar nueva cita</h2>
+
+            <form method="post">
+                <select name="auto" required>
+                    {% for auto in autos %}
+                        <option value="{{ auto[0] }}">
+                            {{ auto[1] }} - {{ auto[2] }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <input type="date" name="fecha" required>
+
+                <select name="servicio" required>
+                    <option value="Afinación">Afinación</option>
+                    <option value="Revisión">Revisión</option>
+                    <option value="Garantía">Garantía</option>
+                </select>
+
+                <button type="submit">Guardar cita</button>
+            </form>
+
+            <div class="volver">
+                <a href="/inicio">← Volver</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

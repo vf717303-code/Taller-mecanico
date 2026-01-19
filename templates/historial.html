@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial - Taller</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #1e1e1e;
+            display: flex;
+        }
+
+        /* -------- MENÚ -------- */
+
+        .sidebar {
+            width: 230px;
+            background-color: #2b2b2b;
+            padding-top: 30px;
+        }
+
+        .sidebar h1 {
+            color: #ff9800;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 40px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #3a3a3a;
+        }
+
+        /* -------- CONTENIDO -------- */
+
+        .contenido {
+            flex: 1;
+            padding: 40px;
+            color: white;
+        }
+
+        .contenido h2 {
+            color: #ff9800;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #2b2b2b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #ff9800;
+            color: black;
+            padding: 14px;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        tr:hover {
+            background-color: #3a3a3a;
+        }
+
+        .volver {
+            margin-top: 25px;
+        }
+
+        .volver a {
+            color: #ff9800;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .volver a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- MENÚ -->
+    <div class="sidebar">
+        <h1>TALLER</h1>
+        <a href="/inicio">Inicio</a>
+        <a href="/agendar">Agendar cita</a>
+        <a href="/mis_citas">Mis citas</a>
+        <a href="/salir">Cerrar sesión</a>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="contenido">
+        <h2>Historial de mantenimiento</h2>
+
+        <table>
+            <tr>
+                <th>Auto</th>
+                <th>Placas</th>
+                <th>Fecha</th>
+                <th>Servicio</th>
+                <th>Estado</th>
+            </tr>
+
+            {% for h in historial %}
+            <tr>
+                <td>{{ h[0] }}</td>
+                <td>{{ h[1] }}</td>
+                <td>{{ h[2] }}</td>
+                <td>{{ h[3] }}</td>
+                <td>{{ h[4] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="volver">
+            <a href="/inicio">← Volver</a>
+        </div>
+    </div>
+
+</body>
+</html>

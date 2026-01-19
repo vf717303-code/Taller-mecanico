@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio Cliente - Taller</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #1e1e1e;
+            display: flex;
+        }
+
+        /* -------- MENÚ LATERAL -------- */
+
+        .sidebar {
+            width: 230px;
+            background-color: #2b2b2b;
+            padding-top: 30px;
+        }
+
+        .sidebar h1 {
+            color: #ff9800;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 40px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #3a3a3a;
+        }
+
+        /* -------- CONTENIDO -------- */
+
+        .contenido {
+            flex: 1;
+            padding: 40px;
+            color: white;
+        }
+
+        .contenido h2 {
+            margin-top: 0;
+            font-size: 26px;
+        }
+
+        .bienvenida {
+            background-color: #2b2b2b;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- MENÚ -->
+    <div class="sidebar">
+        <h1>TALLER</h1>
+
+        <a href="/agendar">Agendar cita</a>
+        <a href="/mis_citas">Mis citas</a>
+        <a href="/historial">Historial</a>
+        <a href="/salir">Cerrar sesión</a>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="contenido">
+        <div class="bienvenida">
+            <h2>Bienvenido, {{ nombre }}</h2>
+            <p>Desde aquí puedes gestionar tus citas y consultar el historial de mantenimiento de tu vehículo.</p>
+        </div>
+    </div>
+
+</body>
+</html>
