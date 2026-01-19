@@ -1,42 +1,52 @@
 from flask import Flask, render_template, request, redirect, session
 import os
+
+# Local sqlite
 import sqlite3
+
+# Producción postgres
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 app.secret_key = "taller_secreto"
 
+
 # ---------------- BD ----------------
+def usando_postgres():
+    return bool(os.environ.get("DATABASE_URL"))
+
 
 def conectar_db():
     db_url = os.environ.get("DATABASE_URL")
 
     # Producción (Render) -> PostgreSQL
     if db_url:
-        # Render a veces da postgres:// pero psycopg2 quiere postgresql://
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
-        return psycopg2.connect(db_url)
+        return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
 
     # Local -> SQLite
     return sqlite3.connect("database.db")
 
 
-def es_postgres():
-    return os.environ.get("DATABASE_URL") is not None
+def placeholder():
+    # SQLite usa "?"
+    # PostgreSQL usa "%s"
+    return "%s" if usando_postgres() else "?"
 
 
-def p(s):
-    """
-    Helper para placeholders:
-    - SQLite usa ? 
-    - PostgreSQL usa %s
-    """
-    return "%s" if es_postgres() else "?"
+def fetchone(cursor):
+    row = cursor.fetchone()
+    return row
+
+
+def fetchall(cursor):
+    rows = cursor.fetchall()
+    return rows
 
 
 # ---------------- LOGIN CLIENTE ----------------
-
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -47,26 +57,33 @@ def login():
             return render_template("login.html", error="Completa todos los campos")
 
         conn = conectar_db()
-        cursor = conn.cursor()
+        cur = conn.cursor()
 
-        q = f"SELECT id FROM clientes WHERE nombre={p('')} AND password={p('')}"
-        cursor.execute(q, (nombre, password))
-        cliente = cursor.fetchone()
+        p = placeholder()
+        sql = f"SELECT id, nombre FROM clientes WHERE nombre={p} AND password={p}"
+
+        cur.execute(sql, (nombre, password))
+        cliente = fetchone(cur)
 
         conn.close()
 
         if cliente:
-            session["cliente_id"] = cliente[0]
-            session["cliente_nombre"] = nombre
+            # RealDictCursor (Postgres) => dict; SQLite => tuple
+            if isinstance(cliente, dict):
+                session["cliente_id"] = cliente["id"]
+                session["cliente_nombre"] = cliente["nombre"]
+            else:
+                session["cliente_id"] = cliente[0]
+                session["cliente_nombre"] = nombre
+
             return redirect("/inicio")
-        else:
-            return render_template("login.html", error="Nombre o contraseña incorrectos")
+
+        return render_template("login.html", error="Nombre o contraseña incorrectos")
 
     return render_template("login.html")
 
 
 # ---------------- INICIO CLIENTE ----------------
-
 @app.route("/inicio")
 def inicio():
     if "cliente_id" not in session:
@@ -76,30 +93,27 @@ def inicio():
 
 
 # ---------------- AGENDAR CITA (CLIENTE) ----------------
-
 @app.route("/agendar", methods=["GET", "POST"])
 def agendar():
     if "cliente_id" not in session:
         return redirect("/")
 
     conn = conectar_db()
-    cursor = conn.cursor()
+    cur = conn.cursor()
+    p = placeholder()
 
-    q_autos = f"SELECT id, marca, placas FROM autos WHERE cliente_id={p('')}"
-    cursor.execute(q_autos, (session["cliente_id"],))
-    autos = cursor.fetchall()
+    cur.execute(f"SELECT id, marca, placas FROM autos WHERE cliente_id={p}", (session["cliente_id"],))
+    autos = fetchall(cur)
 
     if request.method == "POST":
         auto_id = request.form.get("auto")
         fecha = request.form.get("fecha")
         servicio = request.form.get("servicio")
 
-        q_insert = f"""
-            INSERT INTO citas (auto_id, fecha, servicio, estado, origen)
-            VALUES ({p('')}, {p('')}, {p('')}, 'En admisión', 'cliente')
-        """
-        cursor.execute(q_insert, (auto_id, fecha, servicio))
-
+        cur.execute(
+            f"INSERT INTO citas (auto_id, fecha, servicio, estado, origen) VALUES ({p}, {p}, {p}, 'En admisión', 'cliente')",
+            (auto_id, fecha, servicio)
+        )
         conn.commit()
         conn.close()
         return redirect("/mis_citas")
@@ -109,16 +123,16 @@ def agendar():
 
 
 # ---------------- MIS CITAS (CLIENTE) ----------------
-
 @app.route("/mis_citas")
 def mis_citas():
     if "cliente_id" not in session:
         return redirect("/")
 
     conn = conectar_db()
-    cursor = conn.cursor()
+    cur = conn.cursor()
+    p = placeholder()
 
-    q = f"""
+    cur.execute(f"""
         SELECT 
             citas.id,
             citas.fecha,
@@ -129,50 +143,47 @@ def mis_citas():
             autos.placas
         FROM citas
         JOIN autos ON citas.auto_id = autos.id
-        WHERE autos.cliente_id = {p('')}
+        WHERE autos.cliente_id = {p}
         ORDER BY citas.fecha DESC
-    """
-    cursor.execute(q, (session["cliente_id"],))
-    citas = cursor.fetchall()
+    """, (session["cliente_id"],))
 
+    citas = fetchall(cur)
     conn.close()
+
     return render_template("mis_citas.html", citas=citas)
 
 
 # ---------------- HISTORIAL ----------------
-
 @app.route("/historial")
 def historial():
     if "cliente_id" not in session:
         return redirect("/")
 
     conn = conectar_db()
-    cursor = conn.cursor()
+    cur = conn.cursor()
+    p = placeholder()
 
-    q = f"""
+    cur.execute(f"""
         SELECT autos.marca, autos.placas, citas.fecha, citas.servicio, citas.estado
         FROM citas
         JOIN autos ON citas.auto_id = autos.id
-        WHERE autos.cliente_id = {p('')}
+        WHERE autos.cliente_id={p}
         ORDER BY citas.fecha DESC
-    """
-    cursor.execute(q, (session["cliente_id"],))
-    historial = cursor.fetchall()
+    """, (session["cliente_id"],))
 
+    historial = fetchall(cur)
     conn.close()
+
     return render_template("historial.html", historial=historial)
 
 
-# =====================================================
-# ======= SECCIÓN EMPLEADOS (ADMISIÓN DE CITAS) =======
-# =====================================================
-
+# ---------------- EMPLEADO: CITAS EN ADMISION ----------------
 @app.route("/empleado/citas_admision")
 def citas_admision():
     conn = conectar_db()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute("""
+    cur.execute("""
         SELECT
             citas.id,
             citas.fecha,
@@ -188,7 +199,7 @@ def citas_admision():
         ORDER BY citas.fecha
     """)
 
-    citas = cursor.fetchall()
+    citas = fetchall(cur)
     conn.close()
 
     return render_template("citas_admision.html", citas=citas)
@@ -197,11 +208,10 @@ def citas_admision():
 @app.route("/empleado/aceptar_cita/<int:cita_id>")
 def aceptar_cita(cita_id):
     conn = conectar_db()
-    cursor = conn.cursor()
+    cur = conn.cursor()
+    p = placeholder()
 
-    q = f"UPDATE citas SET estado='Aceptada' WHERE id={p('')}"
-    cursor.execute(q, (cita_id,))
-
+    cur.execute(f"UPDATE citas SET estado='Aceptada' WHERE id={p}", (cita_id,))
     conn.commit()
     conn.close()
 
@@ -209,16 +219,11 @@ def aceptar_cita(cita_id):
 
 
 # ---------------- LOGOUT ----------------
-
 @app.route("/salir")
 def salir():
     session.clear()
     return redirect("/")
 
 
-# ---------------- RUN ----------------
-# En Render NO uses app.run; Render usa gunicorn.
-# Esto solo aplica localmente.
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
