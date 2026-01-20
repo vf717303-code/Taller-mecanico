@@ -159,6 +159,10 @@ def iniciar_app():
     entry_fecha.pack(pady=8)
     placeholder(entry_fecha, "Fecha (YYYY-MM-DD)")
 
+    entry_hora = tk.Entry(citas_box, width=45, font=("Arial", 15))
+    entry_hora.pack(pady=8)
+    placeholder(entry_hora, "Hora (HH:MM)")
+
     entry_servicio = tk.Entry(citas_box, width=45, font=("Arial", 15))
     entry_servicio.pack(pady=8)
     placeholder(entry_servicio, "Afinación / Revisión / Garantía")
@@ -175,7 +179,7 @@ def iniciar_app():
         width=22,
         command=lambda: guardar_cita(
             lista_autos,
-            (entry_fecha, entry_servicio, entry_estado)
+            (entry_fecha, entry_hora, entry_servicio, entry_estado)
         )
     ).pack(pady=25)
     
