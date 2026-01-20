@@ -208,7 +208,81 @@ def aceptar_cita(cita_id):
     conn.commit()
     conn.close()
 
-    return redirect("/empleado/citas_admision")
+# ---------------- CITAS PENDIENTES (EMPLEADO) ----------------
+@app.route("/empleado/inicio")
+def empleado_inicio():
+    """Página de inicio para empleados"""
+    return render_template("empleado_inicio.html")
+
+
+@app.route("/empleado/citas_pendientes")
+def citas_pendientes():
+    """Ver citas pendientes para aceptar o rechazar"""
+    conn = conectar_db()
+    cur = conn.cursor()
+    p = placeholder()
+
+    cur.execute(f"""
+        SELECT 
+            citas.id,
+            clientes.nombre,
+            autos.marca,
+            autos.modelo,
+            autos.placas,
+            citas.fecha,
+            citas.hora,
+            citas.servicio
+        FROM citas
+        JOIN autos ON citas.auto_id = autos.id
+        JOIN clientes ON autos.cliente_id = clientes.id
+        WHERE citas.estado = 'En admisión'
+        ORDER BY citas.fecha, citas.hora
+    """)
+
+    citas = fetchall(cur)
+    conn.close()
+
+    return render_template("citas_pendientes.html", citas=citas)
+
+
+# ---------------- ACEPTAR CITA (EMPLEADO) ----------------
+@app.route("/empleado/aceptar_cita/<int:cita_id>", methods=["POST"])
+def aceptar_cita_empleado(cita_id):
+    """Aceptar una cita pendiente"""
+    conn = conectar_db()
+    cur = conn.cursor()
+    p = placeholder()
+
+    try:
+        cur.execute(f"UPDATE citas SET estado='Aceptada' WHERE id={p}", (cita_id,))
+        conn.commit()
+        print(f"✓ Cita {cita_id} aceptada")
+    except Exception as e:
+        print(f"Error al aceptar cita: {e}")
+    finally:
+        conn.close()
+
+    return redirect("/empleado/citas_pendientes")
+
+
+# ---------------- RECHAZAR CITA (EMPLEADO) ----------------
+@app.route("/empleado/rechazar_cita/<int:cita_id>", methods=["POST"])
+def rechazar_cita_empleado(cita_id):
+    """Rechazar una cita pendiente"""
+    conn = conectar_db()
+    cur = conn.cursor()
+    p = placeholder()
+
+    try:
+        cur.execute(f"UPDATE citas SET estado='Rechazada' WHERE id={p}", (cita_id,))
+        conn.commit()
+        print(f"✓ Cita {cita_id} rechazada")
+    except Exception as e:
+        print(f"Error al rechazar cita: {e}")
+    finally:
+        conn.close()
+
+    return redirect("/empleado/citas_pendientes")
 
 
 # ---------------- LOGOUT ----------------
