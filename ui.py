@@ -213,6 +213,15 @@ def iniciar_app():
     
     tk.Button(
         botones_frame,
+        text="Actualizar",
+        bg="#3498db",
+        font=("Arial", 15),
+        width=15,
+        command=lambda: cargar_citas_pendientes(lista_citas_pendientes)
+    ).pack(side="left", padx=10)
+    
+    tk.Button(
+        botones_frame,
         text="Aceptar cita",
         bg="#ff9800",
         font=("Arial", 15),
