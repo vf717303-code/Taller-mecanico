@@ -237,3 +237,6 @@ def iniciar_app():
         ventana.after(5000, actualizar_citas_automaticamente)  # Cada 5 segundos
     
     actualizar_citas_automaticamente()
+    mostrar_frame(frame_clientes)
+
+    ventana.mainloop()
