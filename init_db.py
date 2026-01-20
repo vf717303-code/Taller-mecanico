@@ -35,14 +35,24 @@ def inicializar_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             auto_id INTEGER NOT NULL,
             fecha TEXT,
+            hora TEXT,
             servicio TEXT,
             estado TEXT,
+            origen TEXT,
             FOREIGN KEY (auto_id) REFERENCES autos(id)
         )
         """)
         
         conn.commit()
         print("✓ Base de datos inicializada correctamente")
+        
+        # Agregar columna hora a tabla citas si no existe (para tablas existentes)
+        try:
+            cur.execute("ALTER TABLE citas ADD COLUMN hora TEXT")
+            conn.commit()
+            print("✓ Columna 'hora' agregada a tabla citas")
+        except Exception as e:
+            print(f"Nota: Columna 'hora' ya existe o no se puede agregar: {e}")
     except Exception as e:
         print(f"Error: {e}")
     finally:

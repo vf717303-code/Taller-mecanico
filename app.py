@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+import os
 
 app = Flask(__name__)
 app.secret_key = "taller_secreto"
@@ -90,11 +91,12 @@ def agendar():
     if request.method == "POST":
         auto_id = request.form.get("auto")
         fecha = request.form.get("fecha")
+        hora = request.form.get("hora")
         servicio = request.form.get("servicio")
 
         cur.execute(
-            f"INSERT INTO citas (auto_id, fecha, servicio, estado, origen) VALUES ({p}, {p}, {p}, 'En admisión', 'cliente')",
-            (auto_id, fecha, servicio)
+            f"INSERT INTO citas (auto_id, fecha, hora, servicio, estado, origen) VALUES ({p}, {p}, {p}, {p}, 'En admisión', 'cliente')",
+            (auto_id, fecha, hora, servicio)
         )
         conn.commit()
         conn.close()
