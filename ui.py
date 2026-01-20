@@ -3,13 +3,7 @@ import tkinter as tk
 from utils import placeholder, mostrar_frame
 from clientes import guardar_cliente, cargar_clientes
 from autos import guardar_auto, cargar_autos
-from citas import (
-    guardar_cita,
-    cargar_citas_pendientes,
-    aceptar_cita,
-    rechazar_cita,
-    obtener_info_cliente_cita
-)
+from citas_pendientes import cargar_citas_pendientes, aceptar_cita, rechazar_cita
 
 
 def iniciar_app():
@@ -204,8 +198,6 @@ def iniciar_app():
         font=("Arial", 12)
     )
     lista_citas_pendientes.pack(pady=10)
-    # Evento de doble clic para ver información del cliente
-    lista_citas_pendientes.bind("<Double-Button-1>", lambda e: obtener_info_cliente_cita(lista_citas_pendientes))
     
     # Frame para los botones
     botones_frame = tk.Frame(citas_p_box, bg="#1e1e1e")
