@@ -4,6 +4,7 @@ from tkinter import ttk
 from utils import placeholder, mostrar_frame
 from clientes import guardar_cliente, cargar_clientes
 from autos import guardar_auto, cargar_autos
+from citas import guardar_cita
 from citas_pendientes import cargar_citas_pendientes, aceptar_cita, rechazar_cita, mostrar_info_cita
 
 
