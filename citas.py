@@ -7,21 +7,22 @@ def guardar_cita(lista_autos, entries):
         return
 
     auto_id = int(lista_autos.get(lista_autos.curselection()[0]).split(" | ")[0])
-    entry_fecha, entry_servicio, entry_estado = entries
+    entry_fecha, entry_hora, entry_servicio, entry_estado = entries
 
     fecha = entry_fecha.get()
+    hora = entry_hora.get()
     servicio = entry_servicio.get()
     estado = entry_estado.get()
 
-    if fecha.startswith("Fecha") or servicio.startswith("Afinación"):
+    if fecha.startswith("Fecha") or hora.startswith("Hora") or servicio.startswith("Afinación"):
         messagebox.showerror("Error", "Completa los datos de la cita")
         return
 
     conn = conectar_db()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO citas (auto_id, fecha, servicio, estado) VALUES (?, ?, ?, ?)",
-        (auto_id, fecha, servicio, estado)
+        "INSERT INTO citas (auto_id, fecha, hora, servicio, estado) VALUES (?, ?, ?, ?, ?)",
+        (auto_id, fecha, hora, servicio, estado)
     )
     conn.commit()
     conn.close()
@@ -98,7 +99,7 @@ def obtener_info_cliente_cita(lista_citas):
     conn = conectar_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT c.nombre, c.telefono, c.correo, a.marca, a.modelo, a.placas, cit.fecha, cit.servicio
+        SELECT c.nombre, c.telefono, c.correo, a.marca, a.modelo, a.placas, cit.fecha, cit.hora, cit.servicio
         FROM citas cit
         JOIN autos a ON cit.auto_id = a.id
         JOIN clientes c ON a.cliente_id = c.id
@@ -108,7 +109,7 @@ def obtener_info_cliente_cita(lista_citas):
     conn.close()
     
     if info:
-        cliente_nombre, telefono, correo, marca, modelo, placas, fecha, servicio = info
+        cliente_nombre, telefono, correo, marca, modelo, placas, fecha, hora, servicio = info
         detalles = f"""
         INFORMACIÓN DE LA CITA:
         
@@ -119,6 +120,7 @@ def obtener_info_cliente_cita(lista_citas):
         Auto: {marca} {modelo}
         Placas: {placas}
         Fecha de cita: {fecha}
+        Hora: {hora}
         Servicio: {servicio}
         """
         messagebox.showinfo("Información de la cita", detalles)
