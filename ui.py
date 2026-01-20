@@ -1,11 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
+from tkcalendar import Calendar
+from datetime import datetime
 
 from utils import placeholder, mostrar_frame
 from clientes import guardar_cliente, cargar_clientes
 from autos import guardar_auto, cargar_autos
 from citas import guardar_cita
 from citas_pendientes import cargar_citas_pendientes, aceptar_cita, rechazar_cita, mostrar_info_cita
+from db import conectar_db
 
 
 def iniciar_app():
@@ -157,15 +160,46 @@ def iniciar_app():
     lista_autos = tk.Listbox(citas_box, width=60, height=6, font=("Arial", 12))
     lista_autos.pack(pady=10)
 
-    entry_fecha = tk.Entry(citas_box, width=45, font=("Arial", 15))
-    entry_fecha.pack(pady=8)
-    placeholder(entry_fecha, "Fecha (YYYY-MM-DD)")
+    # Calendario para seleccionar fecha
+    tk.Label(citas_box, text="Selecciona fecha:", fg="#ff9800", bg="#1e1e1e", font=("Arial", 12, "bold")).pack(pady=5)
+    calendario = Calendar(citas_box, selectmode="day", year=datetime.now().year, month=datetime.now().month, day=datetime.now().day, background="#ff9800", foreground="black", borderwidth=2)
+    calendario.pack(pady=10)
 
-    # Lista desplegable de horas
+    # Función para actualizar horas disponibles
+    def actualizar_horas(*args):
+        fecha_sel = calendario.get_date()
+        conn = conectar_db()
+        cursor = conn.cursor()
+        
+        # Obtener todas las horas ocupadas para esa fecha
+        cursor.execute("""
+            SELECT hora FROM citas 
+            WHERE fecha = ? AND estado != 'Rechazada'
+        """, (fecha_sel,))
+        
+        horas_ocupadas = [row[0] for row in cursor.fetchall()]
+        conn.close()
+        
+        # Generar todas las horas disponibles
+        todas_horas = [f"{h:02d}:00" for h in range(8, 23)]
+        horas_disponibles = [h for h in todas_horas if h not in horas_ocupadas]
+        
+        # Actualizar combobox
+        entry_hora['values'] = horas_disponibles
+        if horas_disponibles:
+            entry_hora.set(horas_disponibles[0])
+        else:
+            entry_hora.set("No hay horas disponibles")
+
+    # Lista desplegable de horas (inicialmente todas)
+    tk.Label(citas_box, text="Selecciona hora:", fg="#ff9800", bg="#1e1e1e", font=("Arial", 12, "bold")).pack(pady=5)
     horas = [f"{h:02d}:00" for h in range(8, 23)]
     entry_hora = ttk.Combobox(citas_box, values=horas, width=42, font=("Arial", 15), state="readonly")
     entry_hora.pack(pady=8)
     entry_hora.set("Selecciona hora")
+    
+    # Actualizar horas cuando cambia la fecha
+    calendario.bind("<<CalendarSelected>>", actualizar_horas)
 
     entry_servicio = tk.Entry(citas_box, width=45, font=("Arial", 15))
     entry_servicio.pack(pady=8)
@@ -183,7 +217,7 @@ def iniciar_app():
         width=22,
         command=lambda: guardar_cita(
             lista_autos,
-            (entry_fecha, entry_hora, entry_servicio, entry_estado)
+            (calendario, entry_hora, entry_servicio, entry_estado)
         )
     ).pack(pady=25)
     

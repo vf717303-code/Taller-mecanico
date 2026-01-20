@@ -7,14 +7,14 @@ def guardar_cita(lista_autos, entries):
         return
 
     auto_id = int(lista_autos.get(lista_autos.curselection()[0]).split(" | ")[0])
-    entry_fecha, entry_hora, entry_servicio, entry_estado = entries
+    calendario, entry_hora, entry_servicio, entry_estado = entries
 
-    fecha = entry_fecha.get()
+    fecha = calendario.get_date()
     hora = entry_hora.get()
     servicio = entry_servicio.get()
     estado = entry_estado.get()
 
-    if fecha.startswith("Fecha") or hora == "Selecciona hora" or servicio.startswith("Afinación"):
+    if hora == "Selecciona hora" or hora == "No hay horas disponibles" or servicio.startswith("Afinación"):
         messagebox.showerror("Error", "Completa los datos de la cita")
         return
 
@@ -43,11 +43,9 @@ def guardar_cita(lista_autos, entries):
 
     messagebox.showinfo("Éxito", "Cita agendada")
 
-    for e in entries:
-        if hasattr(e, 'delete'):
-            e.delete(0, "end")
-        if hasattr(e, 'set'):
-            e.set("Selecciona hora")
+    entry_servicio.delete(0, "end")
+    entry_estado.delete(0, "end")
+    entry_hora.set("Selecciona hora")
 
 # -------------------------------------------------
 # CARGAR CITAS PENDIENTES
