@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from tkcalendar import Calendar
+from tkcalendar import DateEntry
 from datetime import datetime
 
 from utils import placeholder, mostrar_frame
@@ -160,10 +160,20 @@ def iniciar_app():
     lista_autos = tk.Listbox(citas_box, width=60, height=6, font=("Arial", 12))
     lista_autos.pack(pady=10)
 
-    # Calendario para seleccionar fecha
+    # Entrada de fecha con calendario desplegable
     tk.Label(citas_box, text="Selecciona fecha:", fg="#ff9800", bg="#1e1e1e", font=("Arial", 12, "bold")).pack(pady=5)
-    calendario = Calendar(citas_box, selectmode="day", year=datetime.now().year, month=datetime.now().month, day=datetime.now().day, background="#ff9800", foreground="black", borderwidth=2)
-    calendario.pack(pady=10)
+    calendario = DateEntry(
+        citas_box, 
+        width=42,
+        font=("Arial", 15),
+        background="#ff9800",
+        foreground="black",
+        borderwidth=2,
+        year=datetime.now().year,
+        month=datetime.now().month,
+        day=datetime.now().day
+    )
+    calendario.pack(pady=8)
 
     # Función para actualizar horas disponibles
     def actualizar_horas(*args):
@@ -191,15 +201,15 @@ def iniciar_app():
         else:
             entry_hora.set("No hay horas disponibles")
 
+    # Vinculamos la actualización cuando se cambia la fecha
+    calendario.bind("<<Change>>", actualizar_horas)
+
     # Lista desplegable de horas (inicialmente todas)
     tk.Label(citas_box, text="Selecciona hora:", fg="#ff9800", bg="#1e1e1e", font=("Arial", 12, "bold")).pack(pady=5)
     horas = [f"{h:02d}:00" for h in range(8, 23)]
     entry_hora = ttk.Combobox(citas_box, values=horas, width=42, font=("Arial", 15), state="readonly")
     entry_hora.pack(pady=8)
     entry_hora.set("Selecciona hora")
-    
-    # Actualizar horas cuando cambia la fecha
-    calendario.bind("<<CalendarSelected>>", actualizar_horas)
 
     entry_servicio = tk.Entry(citas_box, width=45, font=("Arial", 15))
     entry_servicio.pack(pady=8)
