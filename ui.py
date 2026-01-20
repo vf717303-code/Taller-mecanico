@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 
 from utils import placeholder, mostrar_frame
 from clientes import guardar_cliente, cargar_clientes
@@ -159,9 +160,11 @@ def iniciar_app():
     entry_fecha.pack(pady=8)
     placeholder(entry_fecha, "Fecha (YYYY-MM-DD)")
 
-    entry_hora = tk.Entry(citas_box, width=45, font=("Arial", 15))
+    # Lista desplegable de horas
+    horas = [f"{h:02d}:00" for h in range(8, 18)]
+    entry_hora = ttk.Combobox(citas_box, values=horas, width=42, font=("Arial", 15), state="readonly")
     entry_hora.pack(pady=8)
-    placeholder(entry_hora, "Hora (HH:MM)")
+    entry_hora.set("Selecciona hora")
 
     entry_servicio = tk.Entry(citas_box, width=45, font=("Arial", 15))
     entry_servicio.pack(pady=8)
