@@ -68,18 +68,64 @@ def aceptar_cita(lista):
         messagebox.showerror("Error", "Selecciona una cita")
         return
 
-    cita_id = int(lista.get(lista.curselection()[0]).split(" | ")[0])
+    texto_seleccionado = lista.get(lista.curselection()[0])
+    
+    # Parsear el ID (primera parte antes del pipe)
+    try:
+        cita_id = int(texto_seleccionado.split(" | ")[0])
+    except (ValueError, IndexError):
+        messagebox.showerror("Error", "No se pudo extraer el ID de la cita")
+        return
 
     conn = conectar_db()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "UPDATE citas SET estado='Aceptada' WHERE id=?",
-        (cita_id,)
-    )
+    try:
+        cursor.execute(
+            "UPDATE citas SET estado='Aceptada' WHERE id=?",
+            (cita_id,)
+        )
+        conn.commit()
+        print(f"✓ Cita {cita_id} aceptada")
+        messagebox.showinfo("Éxito", "Cita aceptada")
+    except Exception as e:
+        print(f"Error al aceptar cita: {e}")
+        messagebox.showerror("Error", f"Error al aceptar: {e}")
+    finally:
+        conn.close()
+        cargar_citas_pendientes(lista)
 
-    conn.commit()
-    conn.close()
 
-    messagebox.showinfo("Éxito", "Cita aceptada")
-    cargar_citas_pendientes(lista)
+# ---------------- RECHAZAR CITA ----------------
+
+def rechazar_cita(lista):
+    if not lista.curselection():
+        messagebox.showerror("Error", "Selecciona una cita")
+        return
+
+    texto_seleccionado = lista.get(lista.curselection()[0])
+    
+    # Parsear el ID (primera parte antes del pipe)
+    try:
+        cita_id = int(texto_seleccionado.split(" | ")[0])
+    except (ValueError, IndexError):
+        messagebox.showerror("Error", "No se pudo extraer el ID de la cita")
+        return
+
+    conn = conectar_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "UPDATE citas SET estado='Rechazada' WHERE id=?",
+            (cita_id,)
+        )
+        conn.commit()
+        print(f"✓ Cita {cita_id} rechazada")
+        messagebox.showinfo("Éxito", "Cita rechazada")
+    except Exception as e:
+        print(f"Error al rechazar cita: {e}")
+        messagebox.showerror("Error", f"Error al rechazar: {e}")
+    finally:
+        conn.close()
+        cargar_citas_pendientes(lista)

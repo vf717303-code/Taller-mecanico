@@ -213,15 +213,6 @@ def iniciar_app():
     
     tk.Button(
         botones_frame,
-        text="Actualizar",
-        bg="#3498db",
-        font=("Arial", 15),
-        width=15,
-        command=lambda: cargar_citas_pendientes(lista_citas_pendientes)
-    ).pack(side="left", padx=10)
-    
-    tk.Button(
-        botones_frame,
         text="Aceptar cita",
         bg="#ff9800",
         font=("Arial", 15),
@@ -246,7 +237,11 @@ def iniciar_app():
     cargar_clientes(lista_clientes)
     cargar_clientes(lista_clientes_autos)
     cargar_autos(lista_autos)
-
-    mostrar_frame(frame_clientes)
-
-    ventana.mainloop()
+    
+    # -------- REFRESCO AUTOMÁTICO DE CITAS PENDIENTES --------
+    def actualizar_citas_automaticamente():
+        """Refrescar citas pendientes cada 5 segundos"""
+        cargar_citas_pendientes(lista_citas_pendientes)
+        ventana.after(5000, actualizar_citas_automaticamente)  # Cada 5 segundos
+    
+    actualizar_citas_automaticamente()
