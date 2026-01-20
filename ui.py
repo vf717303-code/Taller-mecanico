@@ -161,7 +161,7 @@ def iniciar_app():
     placeholder(entry_fecha, "Fecha (YYYY-MM-DD)")
 
     # Lista desplegable de horas
-    horas = [f"{h:02d}:00" for h in range(8, 18)]
+    horas = [f"{h:02d}:00" for h in range(8, 23)]
     entry_hora = ttk.Combobox(citas_box, values=horas, width=42, font=("Arial", 15), state="readonly")
     entry_hora.pack(pady=8)
     entry_hora.set("Selecciona hora")
