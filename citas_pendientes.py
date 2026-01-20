@@ -15,16 +15,17 @@ def cargar_citas_pendientes(lista):
             autos.marca,
             autos.placas,
             citas.fecha,
+            citas.hora,
             citas.servicio
         FROM citas
         JOIN autos ON citas.auto_id = autos.id
         JOIN clientes ON autos.cliente_id = clientes.id
         WHERE citas.estado = 'En admisión'
-        ORDER BY citas.fecha
+        ORDER BY citas.fecha, citas.hora
     """)
 
     for fila in cursor.fetchall():
-        texto = f"{fila[0]} | {fila[1]} | {fila[2]} | {fila[3]} | {fila[4]} | {fila[5]}"
+        texto = f"{fila[0]} | {fila[1]} | {fila[2]} | {fila[3]} | {fila[4]} {fila[5]} | {fila[6]}"
         lista.insert("end", texto)
 
     conn.close()
