@@ -126,6 +126,12 @@
         <div class="form-box">
             <h2>Agendar nueva cita</h2>
 
+            {% if error %}
+                <div style="background-color: #ff6b6b; padding: 10px; border-radius: 6px; margin-bottom: 15px; color: white;">
+                    {{ error }}
+                </div>
+            {% endif %}
+
             <form method="post">
                 <select name="auto" required>
                     {% for auto in autos %}

@@ -94,13 +94,22 @@ def agendar():
         hora = request.form.get("hora")
         servicio = request.form.get("servicio")
 
-        cur.execute(
-            f"INSERT INTO citas (auto_id, fecha, hora, servicio, estado, origen) VALUES ({p}, {p}, {p}, {p}, 'En admisión', 'cliente')",
-            (auto_id, fecha, hora, servicio)
-        )
-        conn.commit()
-        conn.close()
-        return redirect("/mis_citas")
+        # Validar que todos los campos estén completos
+        if not all([auto_id, fecha, hora, servicio]):
+            return render_template("agendar_cita.html", autos=autos, error="Completa todos los campos")
+
+        try:
+            cur.execute(
+                f"INSERT INTO citas (auto_id, fecha, hora, servicio, estado, origen) VALUES ({p}, {p}, {p}, {p}, 'En admisión', 'cliente')",
+                (auto_id, fecha, hora, servicio)
+            )
+            conn.commit()
+            conn.close()
+            return redirect("/mis_citas")
+        except Exception as e:
+            print(f"Error al guardar cita: {e}")
+            conn.close()
+            return render_template("agendar_cita.html", autos=autos, error=f"Error: {str(e)}")
 
     conn.close()
     return render_template("agendar_cita.html", autos=autos)
