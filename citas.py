@@ -18,8 +18,22 @@ def guardar_cita(lista_autos, entries):
         messagebox.showerror("Error", "Completa los datos de la cita")
         return
 
+    # Verificar si ya existe una cita para esa fecha y hora (no rechazada)
     conn = conectar_db()
     cursor = conn.cursor()
+    cursor.execute("""
+        SELECT COUNT(*) FROM citas 
+        WHERE fecha = ? AND hora = ? AND estado != 'Rechazada'
+    """, (fecha, hora))
+    
+    citas_conflicto = cursor.fetchone()[0]
+    
+    if citas_conflicto > 0:
+        conn.close()
+        messagebox.showerror("Error", f"Ya existe una cita programada para {fecha} a las {hora}")
+        return
+
+    # Si no hay conflicto, guardar la cita
     cursor.execute(
         "INSERT INTO citas (auto_id, fecha, hora, servicio, estado) VALUES (?, ?, ?, ?, ?)",
         (auto_id, fecha, hora, servicio, estado)

@@ -98,6 +98,17 @@ def agendar():
         if not all([auto_id, fecha, hora, servicio]):
             return render_template("agendar_cita.html", autos=autos, error="Completa todos los campos")
 
+        # Verificar si ya existe una cita para esa fecha y hora (no rechazada)
+        cur.execute(
+            f"SELECT COUNT(*) FROM citas WHERE fecha={p} AND hora={p} AND estado != 'Rechazada'",
+            (fecha, hora)
+        )
+        citas_conflicto = cur.fetchone()[0]
+
+        if citas_conflicto > 0:
+            conn.close()
+            return render_template("agendar_cita.html", autos=autos, error=f"Ya existe una cita programada para {fecha} a las {hora}")
+
         try:
             cur.execute(
                 f"INSERT INTO citas (auto_id, fecha, hora, servicio, estado, origen) VALUES ({p}, {p}, {p}, {p}, 'En admisión', 'cliente')",
