@@ -1,39 +1,21 @@
 from flask import Flask, render_template, request, redirect, session
-import os
-
-# Local sqlite
 import sqlite3
-
-# Producción postgres
-import psycopg2
-from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 app.secret_key = "taller_secreto"
 
 
 # ---------------- BD ----------------
-def usando_postgres():
-    return bool(os.environ.get("DATABASE_URL"))
-
-
 def conectar_db():
-    db_url = os.environ.get("DATABASE_URL")
-
-    # Producción (Render) -> PostgreSQL
-    if db_url:
-        if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql://", 1)
-        return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
-
-    # Local -> SQLite
-    return sqlite3.connect("database.db")
+    """Conectar a SQLite localmente"""
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row  # Para acceder a columnas por nombre
+    return conn
 
 
 def placeholder():
-    # SQLite usa "?"
-    # PostgreSQL usa "%s"
-    return "%s" if usando_postgres() else "?"
+    """SQLite usa ?"""
+    return "?"
 
 
 def fetchone(cursor):
