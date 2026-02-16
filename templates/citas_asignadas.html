@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Citas Asignadas</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #1e1e1e;
+            color: white;
+            padding: 30px;
+        }
+        h1 {
+            color: #ff9800;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #444;
+            text-align: center;
+        }
+        th {
+            background: #ff9800;
+            color: black;
+        }
+        tr:nth-child(even) {
+            background: #2b2b2b;
+        }
+        tr:hover {
+            background: #3a3a3a;
+        }
+        a {
+            color: #ff9800;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .estado-badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .estado-admision {
+            background: #2196F3;
+            color: white;
+        }
+        .estado-aceptada {
+            background: #4CAF50;
+            color: white;
+        }
+        .estado-reparacion {
+            background: #FF9800;
+            color: white;
+        }
+        .estado-espera {
+            background: #FFC107;
+            color: black;
+        }
+        .estado-listo {
+            background: #8BC34A;
+            color: white;
+        }
+        .estado-entregado {
+            background: #9E9E9E;
+            color: white;
+        }
+        .estado-rechazada {
+            background: #F44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Citas Asignadas por Empleados</h1>
+<p class="subtitle">Estas son las citas que el personal del taller ha programado para tu vehículo</p>
+
+{% if citas %}
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Servicio</th>
+            <th>Estado</th>
+            <th>Vehículo</th>
+            <th>Placas</th>
+            <th>Mecánico</th>
+        </tr>
+    </thead>
+    <tbody id="tabla-citas">
+    {% for c in citas %}
+    <tr>
+        <td>{{ c[1] if c[1] else 'N/A' }}</td>
+        <td>{{ c[2] if c[2] else 'N/A' }}</td>
+        <td>{{ c[3] }}</td>
+        <td>
+            {% set estado = c[4] %}
+            {% if estado == 'En admisión' %}
+                <span class="estado-badge estado-admision">{{ estado }}</span>
+            {% elif estado == 'Aceptada' %}
+                <span class="estado-badge estado-aceptada">{{ estado }}</span>
+            {% elif estado == 'En reparación' %}
+                <span class="estado-badge estado-reparacion">{{ estado }}</span>
+            {% elif estado == 'En espera' %}
+                <span class="estado-badge estado-espera">{{ estado }}</span>
+            {% elif estado == 'Listo para entrega' %}
+                <span class="estado-badge estado-listo">{{ estado }}</span>
+            {% elif estado == 'Entregado' %}
+                <span class="estado-badge estado-entregado">{{ estado }}</span>
+            {% elif estado == 'Rechazada' %}
+                <span class="estado-badge estado-rechazada">{{ estado }}</span>
+            {% else %}
+                <span class="estado-badge">{{ estado }}</span>
+            {% endif %}
+        </td>
+        <td>{{ c[5] }} {{ c[6] }}</td>
+        <td>{{ c[7] }}</td>
+        <td>{{ c[8] }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="text-align:center; margin-top: 50px; font-size: 18px;">No tienes citas asignadas por empleados.</p>
+{% endif %}
+
+<a href="/inicio">⬅ Volver</a>
+
+<script>
+(function(){
+  const table = document.querySelector('table');
+  if (!table) return;
+  
+  let tbody = document.getElementById('tabla-citas');
+  if (!tbody) return;
+  
+  let lastUpdate = 0;
+  async function refresh(){
+    try {
+      const now = Date.now();
+      if (now - lastUpdate < 3000) return;
+      lastUpdate = now;
+      
+      const r = await fetch('/api/citas_asignadas', { cache:'no-store' });
+      const data = await r.json();
+      if (!data.ok) return;
+      
+      const rows = (data.citas||[]).map(c => {
+        let estadoClass = '';
+        let estado = c.estado;
+        
+        if (estado === 'En admisión') estadoClass = 'estado-admision';
+        else if (estado === 'Aceptada') estadoClass = 'estado-aceptada';
+        else if (estado === 'En reparación') estadoClass = 'estado-reparacion';
+        else if (estado === 'En espera') estadoClass = 'estado-espera';
+        else if (estado === 'Listo para entrega') estadoClass = 'estado-listo';
+        else if (estado === 'Entregado') estadoClass = 'estado-entregado';
+        else if (estado === 'Rechazada') estadoClass = 'estado-rechazada';
+        
+        return `
+        <tr>
+          <td>${c.fecha || 'N/A'}</td>
+          <td>${c.hora || 'N/A'}</td>
+          <td>${c.servicio}</td>
+          <td><span class="estado-badge ${estadoClass}">${estado}</span></td>
+          <td>${c.marca} ${c.modelo}</td>
+          <td>${c.placas}</td>
+          <td>${c.mecanico}</td>
+        </tr>`;
+      }).join('');
+      
+      tbody.innerHTML = rows;
+    } catch(e) {
+      console.error('Error actualizando citas:', e);
+    }
+  }
+  
+  // Actualizar cada 5 segundos
+  setInterval(refresh, 5000);
+  
+  // También actualizar cuando la página recupera el foco
+  window.addEventListener('focus', refresh);
+})();
+</script>
+
+</body>
+</html>

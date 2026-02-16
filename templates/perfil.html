@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Perfil del Cliente</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial;
+        background: #1e1e1e;
+        color: white;
+        display: flex;
+    }
+
+    .menu {
+        width: 230px;
+        background: #2b2b2b;
+        padding: 20px;
+    }
+
+    .menu h2 {
+        color: #ff9800;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .menu a {
+        display: block;
+        padding: 12px;
+        color: white;
+        text-decoration: none;
+        margin-bottom: 10px;
+        border-radius: 6px;
+    }
+
+    .menu a:hover {
+        background: #ff9800;
+        color: black;
+    }
+
+    .contenido {
+        flex: 1;
+        padding: 40px;
+    }
+
+    .perfil-box {
+        max-width: 500px;
+        background: #2a2a2a;
+        padding: 30px;
+        border-radius: 12px;
+    }
+
+    h1 {
+        color: #ff9800;
+        margin-bottom: 25px;
+    }
+
+    label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 6px;
+        border: none;
+    }
+
+    button {
+        margin-top: 25px;
+        padding: 12px;
+        width: 100%;
+        background: #ff9800;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="menu">
+    <h2>TALLER</h2>
+    <a href="/inicio">Inicio</a>
+    <a href="/historial">Mis citas</a>
+    <a href="/perfil">Mi perfil</a>
+    <a href="/salir">Cerrar sesión</a>
+</div>
+
+<div class="contenido">
+    <div class="perfil-box">
+        <h1>👤 Mi perfil</h1>
+
+        <form method="POST">
+            <label>Nombre</label>
+            <input type="text" value="{{ cliente.nombre }}" disabled>
+
+            <label>Teléfono</label>
+            <input type="text" name="telefono" value="{{ cliente.telefono }}" required>
+
+            <label>Correo</label>
+            <input type="email" name="correo" value="{{ cliente.correo }}" required>
+
+            <label>Contraseña</label>
+            <input type="password" name="password" value="{{ cliente.password }}" required>
+
+            <button type="submit">Guardar cambios</button>
+        </form>
+    </div>
+</div>
+
+<script>
+(function(){
+  const tel = document.querySelector('input[name="telefono"]');
+  const email = document.querySelector('input[name="correo"]');
+  const pass = document.querySelector('input[name="password"]');
+  async function refresh(){
+    try {
+      const r = await fetch('/api/perfil', { cache:'no-store' });
+      const data = await r.json();
+      if (!data.ok) return;
+      const c = data.cliente || {};
+      if (tel && document.activeElement !== tel) tel.value = c.telefono || '';
+      if (email && document.activeElement !== email) email.value = c.correo || '';
+      if (pass && document.activeElement !== pass) pass.value = c.password || '';
+    } catch {}
+  }
+  setInterval(refresh, 4000);
+})();
+</script>
+
+</body>
+</html>

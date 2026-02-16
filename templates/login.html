@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Cliente - Taller</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background-color: #2b2b2b;
+            width: 380px;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            text-align: center;
+        }
+
+        .login-box h1 {
+            margin: 0;
+            color: #ff9800;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .login-box .logo {
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .login-box h2 {
+            color: white;
+            font-weight: normal;
+            margin-bottom: 30px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .login-box input::placeholder {
+            color: #999;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff9800;
+            color: black;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-box button:hover {
+            background-color: #e68900;
+        }
+
+        .error {
+            color: #ff5252;
+            margin-bottom: 15px;
+            background-color: rgba(255, 82, 82, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ff5252;
+        }
+
+        .success {
+            color: #4caf50;
+            margin-bottom: 15px;
+            background-color: rgba(76, 175, 80, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .register-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .register-link p {
+            color: #ccc;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #ff9800;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .register-link a:hover {
+            color: #ffc66d;
+            border-bottom: 2px solid #ff9800;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-box">
+        <img src="/static/LOGO_TALLER_NEGRO.png" alt="Logo Taller" class="logo">
+
+        {% if request.args.get('success') %}
+            <div class="success">✓ ¡Registro exitoso! Ahora puedes ingresar con tus datos</div>
+        {% endif %}
+
+        {% if request.args.get('password_changed') %}
+            <div class="success">✓ Contraseña actualizada correctamente. Ingresa con tu nueva contraseña</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            <input type="text" name="nombre" placeholder="Nombre del cliente" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">Entrar</button>
+        </form>
+
+        <div class="register-link">
+            <p>¿No eres cliente aún?</p>
+            <a href="/registro">Regístrate aquí</a>
+        </div>
+
+        <div class="register-link" style="margin-top: 10px;">
+            <p style="font-size: 13px;">¿Olvidaste tu contraseña?</p>
+            <a href="/restablecer-password">Recuperar contraseña</a>
+        </div>
+    </div>
+
+</body>
+</html>

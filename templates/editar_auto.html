@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Auto</title>
+    <style>
+        body { margin:0; font-family: Arial, sans-serif; background:#1e1e1e; color:white; }
+        .contenedor { max-width:900px; margin:auto; padding:30px; }
+        h1 { color:#ff9800; margin-bottom:20px; }
+        .card { background:#2b2b2b; border-radius:8px; padding:20px; }
+        label { display:block; margin-top:12px; margin-bottom:6px; color:#ff9800; font-weight:bold; }
+        input { width:100%; padding:10px; border-radius:6px; border:1px solid #444; background:#1e1e1e; color:white; }
+        .info { margin-top:12px; font-size:13px; color:#bbb; }
+        .status { margin-top:10px; font-size:13px; }
+        .status.ok { color:#69c779; }
+        .status.err { color:#ff4d4d; }
+        .acciones { margin-top:20px; display:flex; gap:12px; }
+        .btn { background:#ff9800; color:black; padding:10px 15px; border-radius:6px; text-decoration:none; font-weight:bold; display:inline-block; }
+        .volver { color:#ff9800; text-decoration:none; font-weight:bold; }
+    </style>
+</head>
+<body>
+<div class="contenedor">
+    <h1>Editar Auto</h1>
+    <div class="card">
+        <div class="info">Los cambios se guardan automáticamente.</div>
+
+        <label for="marca">Marca</label>
+        <input id="marca" type="text" value="{{ auto.marca }}" />
+
+        <label for="modelo">Modelo</label>
+        <input id="modelo" type="text" value="{{ auto.modelo }}" />
+
+        <label for="placas">Placas</label>
+        <input id="placas" type="text" value="{{ auto.placas }}" />
+
+        <div id="status" class="status"></div>
+
+        <div class="acciones">
+            <a href="/mis_autos" class="volver">← Volver</a>
+            <a href="/eliminar_auto/{{ auto.id }}" class="btn" onclick="return confirm('¿Eliminar este auto?')">🗑️ Eliminar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Debounce helper
+function debounce(fn, delay) {
+  let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+
+const autoId = {{ auto.id }};
+const statusEl = document.getElementById('status');
+
+async function save(changes) {
+  try {
+    statusEl.textContent = 'Guardando…';
+    statusEl.className = 'status';
+    const resp = await fetch(`/api/auto/${autoId}/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(changes)
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      statusEl.textContent = 'Guardado';
+      statusEl.className = 'status ok';
+    } else {
+      statusEl.textContent = 'Error: ' + (data.error || 'no especificado');
+      statusEl.className = 'status err';
+    }
+  } catch (e) {
+    statusEl.textContent = 'Error de red';
+    statusEl.className = 'status err';
+  }
+}
+
+const saveDebounced = debounce(save, 600);
+
+document.getElementById('marca').addEventListener('input', (e) => {
+  saveDebounced({ marca: e.target.value });
+});
+document.getElementById('modelo').addEventListener('input', (e) => {
+  saveDebounced({ modelo: e.target.value });
+});
+document.getElementById('placas').addEventListener('input', (e) => {
+  saveDebounced({ placas: e.target.value });
+});
+</script>
+</body>
+</html>

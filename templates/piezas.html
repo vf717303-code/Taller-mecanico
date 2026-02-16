@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos de Piezas - Taller</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #ff9800;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            background-color: #2b2b2b;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #ff9800;
+            color: black;
+            font-weight: bold;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #ff7700;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #444;
+        }
+
+        tr:hover {
+            background-color: #383838;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .estado-pendiente {
+            background-color: #ff9800;
+            color: black;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .estado-realizado {
+            background-color: #4caf50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .proveedor-info {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #ff9800;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 15px;
+            background-color: #2b2b2b;
+            border-radius: 5px;
+            border: 1px solid #ff9800;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #ff9800;
+            color: black;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .row-expandable {
+            cursor: pointer;
+        }
+
+        .detalles {
+            display: none;
+            background-color: #1a1a1a;
+        }
+
+        .detalles.show {
+            display: table-row;
+        }
+
+        .detalles td {
+            padding: 20px;
+        }
+
+        .detalles-content {
+            background-color: #2b2b2b;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .detalles-field {
+            margin-bottom: 15px;
+        }
+
+        .detalles-field label {
+            color: #ff9800;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .detalles-field span {
+            color: #ccc;
+            display: block;
+        }
+
+        .btn-nuevo-pedido {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-nuevo-pedido:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #2b2b2b;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #ff9800;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .modal-header {
+            color: #ff9800;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #ff9800;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+
+        .modal-close:hover {
+            color: #ff7700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ff9800;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-guardar-pedido {
+            width: 100%;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-guardar-pedido:hover {
+            background-color: #45a049;
+        }
+
+        .btn-guardar-pedido:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="/inicio" class="back-link">← Volver</a>
+        
+        <h1>📦 Pedidos de Piezas</h1>
+        
+        <button id="btnNuevoPedido" class="btn-nuevo-pedido">+ Nuevo Pedido</button>
+
+        <div class="table-responsive">
+            {% if pedidos %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Auto</th>
+                            <th>Placa</th>
+                            <th>Servicio</th>
+                            <th>Pieza</th>
+                            <th>Costo</th>
+                            <th>Proveedor</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pedido in pedidos %}
+                            <tr class="row-expandable" onclick="toggleDetalles(this)">
+                                <td><strong>#{{ pedido.id }}</strong></td>
+                                <td>{{ pedido.fecha }}</td>
+                                <td>{{ pedido.cliente }}</td>
+                                <td>{{ pedido.auto }}</td>
+                                <td>{{ pedido.placa }}</td>
+                                <td>{{ pedido.servicio }}</td>
+                                <td>{{ pedido.pieza_refaccion }}</td>
+                                <td>S/. {{ '%.2f'|format(pedido.costo or 0) }}</td>
+                                <td>
+                                    <div>{{ pedido.proveedor }}</div>
+                                    <div class="proveedor-info">
+                                        📞 {{ pedido.telefono }}<br>
+                                        ✉️ {{ pedido.correo }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if pedido.estado == 'Pendiente' %}
+                                        <span class="estado-pendiente">PENDIENTE</span>
+                                    {% else %}
+                                        <span class="estado-realizado">REALIZADO</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr class="detalles">
+                                <td colspan="10">
+                                    <div class="detalles-content">
+                                        <div class="detalles-field">
+                                            <label>📋 Dirección del Proveedor:</label>
+                                            <span>{{ pedido.direccion }}</span>
+                                        </div>
+                                        <div class="detalles-field">
+                                            <label>🔢 RUC del Proveedor:</label>
+                                            <span>{{ pedido.ruc }}</span>
+                                        </div>
+                                        <div class="detalles-field">
+                                            <label>💵 Costo:</label>
+                                            <span>S/. {{ '%.2f'|format(pedido.costo or 0) }}</span>
+                                        </div>
+                                        <div class="detalles-field">
+                                            <label>📝 Detalles Completos:</label>
+                                            <span>
+                                                <strong>Pedido:</strong> {{ pedido.servicio }} - {{ pedido.pieza_refaccion }}<br>
+                                                <strong>Fecha de Solicitud:</strong> {{ pedido.fecha }}<br>
+                                                <strong>Estado:</strong> {{ pedido.estado }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-data">
+                    <h2>No hay pedidos de piezas registrados</h2>
+                    <p>Los pedidos realizados aparecerán aquí</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal para nuevo pedido -->
+    <div id="modalNuevoPedido" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Nuevo Pedido
+                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <form id="formNuevoPedido">
+                <div class="form-group">
+                    <label for="auto_id">Auto:</label>
+                    <select id="auto_id" name="auto_id" required>
+                        <option value="">Selecciona un auto</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="servicio">Servicio a Realizar:</label>
+                    <select id="servicio" name="servicio" required onchange="actualizarCosto()">
+                        <option value="">Selecciona un servicio</option>
+                        <option value="Afinacion">Afinación - S/. 10,000</option>
+                        <option value="Revision">Revisión - S/. 5,000</option>
+                        <option value="Garantia">Garantía - Gratuita</option>
+                        <option value="Otro">Otro (Ingresa costo manual)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pieza_refaccion">Pieza de Refacción:</label>
+                    <input type="text" id="pieza_refaccion" name="pieza_refaccion" placeholder="Ej: Batería, Filtro de aire, etc." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="proveedor_id">Proveedor:</label>
+                    <select id="proveedor_id" name="proveedor_id" required onchange="actualizarProveedorInfo()">
+                        <option value="">Selecciona un proveedor</option>
+                    </select>
+                </div>
+
+                <div id="proveedorInfo" style="display:none; background-color:#1a1a1a; padding:10px; border-radius:5px; margin-bottom:20px; border-left:3px solid #ff9800;">
+                    <div style="color:#ff9800; font-weight:bold; margin-bottom:5px;">Información del Proveedor:</div>
+                    <div style="color:#ccc; font-size:12px;">
+                        <div><strong>📞 Teléfono:</strong> <span id="prov_telefono"></span></div>
+                        <div><strong>✉️ Correo:</strong> <span id="prov_correo"></span></div>
+                        <div><strong>📍 Dirección:</strong> <span id="prov_direccion"></span></div>
+                        <div><strong>🔢 RUC:</strong> <span id="prov_ruc"></span></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="costo">Costo (S/.)::</label>
+                    <input type="number" id="costo" name="costo" step="0.01" min="0" value="0" readonly>
+                    <small style="color:#999; display:block; margin-top:5px;">*Se calcula automáticamente según el servicio</small>
+                </div>
+
+                <button type="submit" class="btn-guardar-pedido">Guardar Pedido</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let proveedoresData = [];
+        let autosData = [];
+
+        // Cargar proveedores y autos al abrir la página
+        async function cargarDatos() {
+            try {
+                const [respProv, respAutos] = await Promise.all([
+                    fetch('/api/proveedores'),
+                    fetch('/api/autos')
+                ]);
+
+                const dataProv = await respProv.json();
+                const dataAutos = await respAutos.json();
+
+                if (dataProv.ok) {
+                    proveedoresData = dataProv.proveedores;
+                    llenarSelectProveedores();
+                }
+
+                if (dataAutos.ok) {
+                    autosData = dataAutos.autos;
+                    llenarSelectAutos();
+                }
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+            }
+        }
+
+        function llenarSelectProveedores() {
+            const select = document.getElementById('proveedor_id');
+            select.innerHTML = '<option value="">Selecciona un proveedor</option>';
+            proveedoresData.forEach(prov => {
+                const option = document.createElement('option');
+                option.value = prov.id;
+                option.textContent = prov.nombre;
+                select.appendChild(option);
+            });
+        }
+
+        function llenarSelectAutos() {
+            const select = document.getElementById('auto_id');
+            select.innerHTML = '<option value="">Selecciona un auto</option>';
+            autosData.forEach(auto => {
+                const option = document.createElement('option');
+                option.value = auto.id;
+                option.textContent = `${auto.marca} ${auto.modelo} (${auto.placas})`;
+                select.appendChild(option);
+            });
+        }
+
+        function actualizarProveedorInfo() {
+            const proveedorId = document.getElementById('proveedor_id').value;
+            const infoDiv = document.getElementById('proveedorInfo');
+
+            if (!proveedorId) {
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            const proveedor = proveedoresData.find(p => p.id == proveedorId);
+            if (proveedor) {
+                document.getElementById('prov_telefono').textContent = proveedor.telefono;
+                document.getElementById('prov_correo').textContent = proveedor.correo;
+                document.getElementById('prov_direccion').textContent = proveedor.direccion;
+                document.getElementById('prov_ruc').textContent = proveedor.ruc;
+                infoDiv.style.display = 'block';
+            }
+        }
+
+        function actualizarCosto() {
+            const servicio = document.getElementById('servicio').value;
+            const costoInput = document.getElementById('costo');
+            
+            const costos = {
+                'Afinacion': 10000,
+                'Revision': 5000,
+                'Garantia': 0
+            };
+            
+            if (costos.hasOwnProperty(servicio)) {
+                costoInput.value = costos[servicio];
+                costoInput.readOnly = true;
+            } else {
+                costoInput.value = 0;
+                costoInput.readOnly = false;
+            }
+        }
+
+        function abrirModal() {
+            document.getElementById('modalNuevoPedido').classList.add('show');
+            cargarDatos();
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalNuevoPedido').classList.remove('show');
+            document.getElementById('formNuevoPedido').reset();
+            document.getElementById('proveedorInfo').style.display = 'none';
+        }
+
+        // Cerrar modal al hacer click fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalNuevoPedido');
+            if (event.target == modal) {
+                cerrarModal();
+            }
+        }
+
+        // Event listener para el botón
+        document.getElementById('btnNuevoPedido').addEventListener('click', abrirModal);
+
+        // Enviar formulario
+        document.getElementById('formNuevoPedido').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
+            try {
+                const response = await fetch('/api/crear_pedido', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        auto_id: document.getElementById('auto_id').value,
+                        proveedor_id: document.getElementById('proveedor_id').value,
+                        servicio: document.getElementById('servicio').value,
+                        pieza_refaccion: document.getElementById('pieza_refaccion').value,
+                        costo: parseFloat(document.getElementById('costo').value)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    alert('Pedido creado exitosamente');
+                    cerrarModal();
+                    // Refrescar la tabla
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error al crear pedido: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Guardar Pedido';
+            }
+        });
+    </script>
+    
+    <script>
+        function toggleDetalles(row) {
+            const detallesRow = row.nextElementSibling;
+            if (detallesRow && detallesRow.classList.contains('detalles')) {
+                detallesRow.classList.toggle('show');
+            }
+        }
+        (function(){
+          const table = document.querySelector('table');
+          if (!table) return;
+          
+          let tbody = table.querySelector('tbody');
+          if (!tbody) {
+            tbody = document.createElement('tbody');
+            const thead = table.querySelector('thead');
+            if (thead) {
+              thead.parentNode.insertBefore(tbody, thead.nextSibling);
+            } else {
+              table.appendChild(tbody);
+            }
+          }
+          
+          let lastUpdate = 0;
+          async function refresh(){
+            try {
+              const now = Date.now();
+              if (now - lastUpdate < 3000) return;
+              lastUpdate = now;
+              
+              const r = await fetch('/api/piezas', { cache:'no-store' });
+              const data = await r.json();
+              if (!data.ok) return;
+              const rows = (data.pedidos||[]).map(p => `
+                <tr class="row-expandable" onclick="toggleDetalles(this)">
+                  <td><strong>#${p.id}</strong></td>
+                  <td>${p.fecha}</td>
+                  <td>${p.cliente}</td>
+                  <td>${p.auto}</td>
+                  <td>${p.placa}</td>
+                  <td>${p.servicio}</td>
+                  <td>${p.pieza_refaccion}</td>
+                  <td>S/. ${(Number(p.costo)||0).toFixed(2)}</td>
+                  <td>
+                    <div>${p.proveedor}</div>
+                    <div class="proveedor-info">📞 ${p.telefono}<br>✉️ ${p.correo}</div>
+                  </td>
+                  <td>${p.estado === 'Pendiente' ? '<span class="estado-pendiente">PENDIENTE</span>' : '<span class="estado-realizado">REALIZADO</span>'}</td>
+                </tr>
+                <tr class="detalles"><td colspan="10"><div class="detalles-content">
+                  <div class="detalles-field"><label>📋 Dirección del Proveedor:</label><span>${p.direccion}</span></div>
+                  <div class="detalles-field"><label>🔢 RUC del Proveedor:</label><span>${p.ruc}</span></div>
+                  <div class="detalles-field"><label>💵 Costo:</label><span>S/. ${(Number(p.costo)||0).toFixed(2)}</span></div>
+                  <div class="detalles-field"><label>📝 Detalles Completos:</label><span><strong>Pedido:</strong> ${p.servicio} - ${p.pieza_refaccion}<br><strong>Fecha de Solicitud:</strong> ${p.fecha}<br><strong>Estado:</strong> ${p.estado}</span></div>
+                </div></td></tr>
+              `).join('');
+              tbody.innerHTML = rows;
+            } catch {}
+          }
+          setInterval(refresh, 3000);
+        })();
+    </script>
+
+</body>
+
+</html>

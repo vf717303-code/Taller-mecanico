@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Citas</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #1e1e1e;
+            color: white;
+            padding: 30px;
+        }
+        h1 {
+            color: #ff9800;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #444;
+            text-align: center;
+        }
+        th {
+            background: #ff9800;
+            color: black;
+        }
+        tr:nth-child(even) {
+            background: #2b2b2b;
+        }
+        tr:hover {
+          background: #333;
+        }
+        a {
+            color: #ff9800;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .acciones {
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+        }
+        .btn-action {
+          border: none;
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .btn-action:active {
+          transform: scale(0.98);
+        }
+        .btn-edit {
+          background: #ff9800;
+          color: #1e1e1e;
+          box-shadow: 0 6px 14px rgba(255, 152, 0, 0.25);
+        }
+        .btn-edit:hover {
+          background: #ffb247;
+        }
+        .btn-save {
+          background: #4caf50;
+          color: white;
+          box-shadow: 0 6px 14px rgba(76, 175, 80, 0.25);
+        }
+        .btn-cancel {
+          background: #424242;
+          color: white;
+        }
+        .pill {
+          display: inline-block;
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          background: #3a3a3a;
+          color: #ffb247;
+        }
+        .input-edit, .select-edit {
+          width: 100%;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: 1px solid #555;
+          background: #1e1e1e;
+          color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Mis Citas</h1>
+
+{% if citas %}
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Servicio</th>
+            <th>Estado</th>
+            <th>Vehículo</th>
+            <th>Placas</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in citas %}
+        <tr data-id="{{ c[0] }}" data-auto-id="{{ c[5] }}">
+            <td class="cell-fecha">{{ c[1] }}</td>
+            <td class="cell-hora">{{ c[2] }}</td>
+            <td class="cell-servicio">{{ c[3] }}</td>
+            <td class="cell-estado">{{ c[4] }}</td>
+            <td>{{ c[6] }} {{ c[7] }}</td>
+            <td>{{ c[8] }}</td>
+            <td>
+                {% if c[4] == 'En admisión' %}
+                <div class="acciones">
+                    <button class="btn-action btn-edit" data-id="{{ c[0] }}">Editar</button>
+                </div>
+                {% else %}
+                <span class="pill">No editable</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="text-align:center;">No tienes citas registradas.</p>
+{% endif %}
+
+<a href="/inicio">⬅ Volver</a>
+
+<script>
+(function(){
+  const table = document.querySelector('table');
+  if (!table) return;
+  
+  let tbody = table.querySelector('tbody');
+  if (!tbody) {
+    tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+  }
+  
+  let lastUpdate = 0;
+  let isEditing = false;
+  let autosCache = [];
+
+  async function cargarAutos(){
+    try {
+      const r = await fetch('/api/autos', { cache:'no-store' });
+      const data = await r.json();
+      if (data.ok) autosCache = data.autos || [];
+    } catch {}
+  }
+  
+  async function refresh(){
+    try {
+      const now = Date.now();
+      if (now - lastUpdate < 3000) return;
+      if (isEditing) return;
+      lastUpdate = now;
+      
+      const r = await fetch('/api/mis_citas', { cache:'no-store' });
+      const data = await r.json();
+      if (!data.ok) return;
+      
+      const rows = (data.citas||[]).map(c => {
+        const editable = c.estado === 'En admisión';
+        return `
+        <tr data-id="${c.id}" data-auto-id="${c.auto_id}">
+          <td class="cell-fecha">${c.fecha}</td>
+          <td class="cell-hora">${c.hora || ''}</td>
+          <td class="cell-servicio">${c.servicio}</td>
+          <td class="cell-estado">${c.estado}</td>
+          <td>${c.marca} ${c.modelo}</td>
+          <td>${c.placas}</td>
+          <td>
+            ${editable ? '<div class="acciones"><button class="btn-action btn-edit" data-id="' + c.id + '">Editar</button></div>' : '<span class="pill">No editable</span>'}
+          </td>
+        </tr>`;
+      }).join('');
+      
+      if (rows) {
+        tbody.innerHTML = rows;
+      }
+    } catch {}
+  }
+
+  tbody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-edit');
+    if (!btn) return;
+    const row = btn.closest('tr');
+    if (!row) return;
+    const citaId = row.getAttribute('data-id') || btn.getAttribute('data-id');
+
+    const fechaCell = row.querySelector('.cell-fecha');
+    const horaCell = row.querySelector('.cell-hora');
+    const servicioCell = row.querySelector('.cell-servicio');
+    const estadoCell = row.querySelector('.cell-estado');
+
+    if (!fechaCell || !horaCell || !servicioCell || !estadoCell) return;
+
+    if (estadoCell.textContent.trim() !== 'En admisión') return;
+
+    if (!autosCache.length) await cargarAutos();
+
+    const fechaVal = fechaCell.textContent.trim();
+    const horaVal = horaCell.textContent.trim();
+    const servicioVal = servicioCell.textContent.trim();
+    const autoActual = row.getAttribute('data-auto-id');
+
+    isEditing = true;
+    fechaCell.innerHTML = `<input type="date" value="${fechaVal}" class="input-edit input-fecha" />`;
+    horaCell.innerHTML = `<input type="time" value="${horaVal}" class="input-edit input-hora" />`;
+    const servicioOptions = ["Revisión", "Afinación", "Garantía"].map(s => {
+      const selected = s.toLowerCase() === servicioVal.toLowerCase() ? 'selected' : '';
+      return `<option value="${s}" ${selected}>${s}</option>`;
+    }).join('');
+    servicioCell.innerHTML = `<select class="select-edit input-servicio">${servicioOptions}</select>`;
+
+    const autoOptions = autosCache.map(a => {
+      const label = `${a.marca} ${a.modelo} (${a.placas})`;
+      const selected = String(a.id) === String(autoActual) ? 'selected' : '';
+      return `<option value="${a.id}" ${selected}>${label}</option>`;
+    }).join('');
+
+    const autoCell = row.children[4];
+    if (autoCell) {
+      autoCell.innerHTML = `<select class="select-edit select-auto">${autoOptions}</select>`;
+    }
+
+    const acciones = row.querySelector('.acciones') || row.children[6];
+    if (acciones) {
+      acciones.innerHTML = `
+        <button class="btn-action btn-save" data-id="${citaId}">Guardar</button>
+        <button class="btn-action btn-cancel" data-id="${citaId}">Cancelar</button>
+      `;
+    }
+
+    const onSave = async (ev) => {
+      const saveBtn = ev.currentTarget;
+      if (!saveBtn.classList.contains('btn-save')) return;
+
+      const newFecha = row.querySelector('.input-fecha')?.value || '';
+      const newHora = row.querySelector('.input-hora')?.value || '';
+      const newServicio = row.querySelector('.input-servicio')?.value || '';
+      const newAuto = row.querySelector('.select-auto')?.value || '';
+
+      try {
+        const resp = await fetch(`/api/mis_citas/${citaId}/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fecha: newFecha, hora: newHora, servicio: newServicio, auto_id: newAuto })
+        });
+        const data = await resp.json();
+        if (!data.ok) {
+          alert(data.error || 'No se pudo actualizar');
+          isEditing = false;
+          return;
+        }
+        isEditing = false;
+        await refresh();
+      } catch (err) {
+        isEditing = false;
+        alert('Error al actualizar la cita');
+      }
+    };
+
+    const onCancel = async () => {
+      isEditing = false;
+      await refresh();
+    };
+
+    const saveBtn = acciones?.querySelector('.btn-save');
+    const cancelBtn = acciones?.querySelector('.btn-cancel');
+    
+    if (saveBtn) saveBtn.addEventListener('click', onSave, { once: true });
+    if (cancelBtn) cancelBtn.addEventListener('click', onCancel, { once: true });
+  });
+  
+  setInterval(refresh, 3000);
+  cargarAutos();
+})();
+</script>
+
+</body>
+</html>

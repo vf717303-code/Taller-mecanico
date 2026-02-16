@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de mantenimiento</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #1e1e1e;
+            color: white;
+            display: flex;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 220px;
+            background: #2b2b2b;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            color: orange;
+            text-align: center;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            margin: 15px 0;
+        }
+
+        .sidebar a:hover {
+            color: orange;
+        }
+
+        /* ===== CONTENIDO ===== */
+        .contenido {
+            flex: 1;
+            padding: 30px;
+        }
+
+        h1 {
+            color: orange;
+        }
+
+        /* ===== FILTROS ===== */
+        .filtros {
+            margin: 20px 0;
+        }
+
+        .filtros button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-right: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .filtros button:hover,
+        .filtros button.activo {
+            background-color: orange;
+            color: black;
+        }
+
+        /* ===== TABLA ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: orange;
+            color: black;
+            padding: 12px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #444;
+        }
+
+        tr:hover {
+            background: #3a3a3a;
+        }
+
+        .volver {
+            color: #ff9800;
+            text-decoration: none;
+            font-weight: bold;
+        
+        }
+
+        .volver:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar">
+        <h2>TALLER</h2>
+        <a href="/inicio">Inicio</a>
+        <a href="/agendar">Agendar cita</a>
+        <a href="/mis_citas">Mis citas</a>
+        <a href="/citas_asignadas">Citas asignadas</a>
+        <a href="/salir">Cerrar sesión</a>
+    </div>
+
+    <!-- ===== CONTENIDO ===== -->
+    <div class="contenido">
+        <h1>Historial de mantenimiento</h1>
+
+        {% if autos_citas %}
+            {% for auto_id, auto_info in autos_citas.items() %}
+                <div style="margin-bottom: 40px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="color: #ff9800; font-size: 20px; margin-top: 30px; margin-bottom: 0;">
+                            {{ auto_info.marca }} {{ auto_info.modelo }} - {{ auto_info.placas }}
+                        </h2>
+                        <a href="/generar_pdf/{{ auto_id }}" style="background-color: #ff9800; color: black; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                            🧾 Generar PDF
+                        </a>
+                    </div>
+
+                    {% if auto_info.citas %}
+                        <!-- FILTROS -->
+                        <div class="filtros">
+                            <button class="activo" onclick="filtrarEstado(this.parentElement, 'todos')">Todos</button>
+                            <button onclick="filtrarEstado(this.parentElement, 'Realizada')">Realizada</button>
+                            <button onclick="filtrarEstado(this.parentElement, 'Aceptada')">Aceptada</button>
+                            <button onclick="filtrarEstado(this.parentElement, 'En admisión')">En admisión</button>
+                        </div>
+
+                        <!-- TABLA POR AUTO -->
+                        <table class="tabla-auto">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Servicio</th>
+                                    <th>Costo</th>
+                                    <th>Mecánico</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cita in auto_info.citas %}
+                                    <tr data-estado="{{ cita.estado }}">
+                                        <td>{{ cita.fecha }}</td>
+                                        <td>{{ cita.servicio }}</td>
+                                        <td>${{ "%.2f"|format(cita.costo) }}</td>
+                                        <td>👨‍🔧 {{ cita.mecanico }}</td>
+                                        <td>{{ cita.estado }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p style="color: #888;">No hay citas registradas para este vehículo</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #888; font-size: 18px;">No hay vehículos registrados</p>
+        {% endif %}
+
+        <a href="/inicio" class="volver" style="display: block; margin-top: 30px;">← Volver</a>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        function filtrarEstado(contenedor, estado) {
+            const botones = contenedor.querySelectorAll("button");
+            const tabla = contenedor.parentElement.querySelector("table");
+            
+            if (!tabla) return;
+            
+            const filas = tabla.querySelectorAll("tbody tr");
+            
+            botones.forEach(b => b.classList.remove("activo"));
+            event.target.classList.add("activo");
+
+            filas.forEach(fila => {
+                if (estado === "todos") {
+                    fila.style.display = "";
+                } else {
+                    fila.style.display = fila.dataset.estado === estado ? "" : "none";
+                }
+            });
+        }
+
+        //=========RECORDATORIO DE CITAS=========
+        function revisarRecordatorios() {
+            const filas = document.querySelectorAll("table tbody tr");
+            const hoy = new Date();
+            hoy.setHours(0,0,0,0);
+
+            filas.forEach(fila => {
+                const fechaTexto = fila.querySelector("td")?.textContent;
+                if (!fechaTexto) return;
+
+                const fechaCita = new Date(fechaTexto);
+                fechaCita.setHours(0,0,0,0);
+
+                const diferencia = (fechaCita - hoy) / (1000 * 60 * 60 * 24);
+
+                if (diferencia === 0) {
+                    console.log("🔔 Hoy tienes una cita programada en el taller");
+                }
+
+                if (diferencia === 1) {
+                    console.log("⏰ Mañana tienes una cita programada en el taller");
+                }
+            });
+        }
+
+        window.onload = revisarRecordatorios;
+    </script>
+
+    <script>
+    (function(){
+      const contenido = document.querySelector('.contenido');
+      if (!contenido) return;
+      let lastUpdate = 0;
+      
+      async function refresh(){
+        try {
+          const now = Date.now();
+          // Solo refrescar cada 5 segundos
+          if (now - lastUpdate < 5000) return;
+          lastUpdate = now;
+          
+          const r = await fetch('/api/historial', { cache:'no-store' });
+          const data = await r.json();
+          if (!data.ok || !data.autos_citas) return;
+          
+          const autos_citas = data.autos_citas || {};
+          
+          // Actualizar solo las tablas, no todo el contenido
+          const tables = contenido.querySelectorAll('table tbody');
+          
+          Object.entries(autos_citas).forEach(([auto_id, auto_info], index) => {
+            if (!tables[index]) return;
+            const tbody = tables[index];
+            if (auto_info.citas && auto_info.citas.length > 0) {
+              let rows = '';
+              auto_info.citas.forEach(cita => {
+                rows += `<tr data-estado="${cita.estado}">
+                  <td>${cita.fecha}</td>
+                  <td>${cita.servicio}</td>
+                  <td>$${(cita.costo || 0).toFixed(2)}</td>
+                  <td>👨‍🔧 ${cita.mecanico}</td>
+                  <td>${cita.estado}</td>
+                </tr>`;
+              });
+              tbody.innerHTML = rows;
+            }
+          });
+        } catch {}
+      }
+      setInterval(refresh, 3000);
+    })();
+    </script>
+
+</body>
+</html>

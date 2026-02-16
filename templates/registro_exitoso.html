@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro Exitoso - Taller</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .success-box {
+            background-color: #2b2b2b;
+            width: 420px;
+            padding: 50px 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            text-align: center;
+            border-top: 5px solid #4caf50;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+
+        .success-box h1 {
+            color: #4caf50;
+            font-size: 28px;
+            margin: 0 0 20px 0;
+        }
+
+        .success-box p {
+            color: #ccc;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .countdown {
+            color: #ff9800;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .btn-volver {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #ff9800;
+            color: black;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn-volver:hover {
+            background-color: #e68900;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="success-box">
+        <div class="success-icon">✓</div>
+        <h1>¡Registro Exitoso!</h1>
+        <p>Usted fue registrado exitosamente en nuestro sistema.</p>
+        <p>Serás redirigido al login en <span class="countdown"><span id="countdown">5</span> segundos</span></p>
+        <button class="btn-volver" onclick="irAlLogin()">Ir al Login Ahora</button>
+    </div>
+
+    <script>
+        let segundos = 5;
+        
+        function irAlLogin() {
+            window.location.href = '/';
+        }
+
+        // Contar hacia atrás
+        const countdownElement = document.getElementById('countdown');
+        const interval = setInterval(() => {
+            segundos--;
+            countdownElement.textContent = segundos;
+            
+            if (segundos <= 0) {
+                clearInterval(interval);
+                irAlLogin();
+            }
+        }, 1000);
+    </script>
+
+</body>
+</html>

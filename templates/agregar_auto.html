@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Agregar Auto</title>
+    <style>
+        body {
+            background: #1e1e1e;
+            color: white;
+            font-family: Arial;
+        }
+
+        .box {
+            max-width: 400px;
+            margin: 80px auto;
+            background: #2b2b2b;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: #ff9800;
+            text-align: center;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+        }
+
+        button {
+            background: #ff9800;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .volver {
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+            color: #ff9800;
+            text-decoration: none;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>➕ Agregar Auto</h2>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <input type="text" name="marca" placeholder="Marca">
+        <input type="text" name="modelo" placeholder="Modelo">
+        <input type="text" name="placas" placeholder="Placas">
+
+        <button type="submit">Guardar auto</button>
+    </form>
+
+    <a href="/mis_autos" class="volver">← Volver</a>
+</div>
+
+</body>
+</html>

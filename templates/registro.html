@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro Cliente - Taller</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .registro-box {
+            background-color: #2b2b2b;
+            width: 420px;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        .registro-box h1 {
+            margin: 0;
+            color: #ff9800;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .registro-box .logo {
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .registro-box h2 {
+            color: white;
+            font-weight: normal;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ff9800;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            outline: none;
+            background-color: #1a1a1a;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            border-color: #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        .registro-box button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .registro-box button:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            color: #ff5252;
+            margin-bottom: 15px;
+            background-color: rgba(255, 82, 82, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ff5252;
+            text-align: center;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #ff9800;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .back-link a:hover {
+            color: #ffc66d;
+            border-bottom: 2px solid #ff9800;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="registro-box">
+        <img src="/static/LOGO_TALLER_NEGRO.png" alt="Logo Taller" class="logo">
+        <h1>Crear Cuenta</h1>
+
+        {% if error_registro %}
+            <div class="error">{{ error_registro }}</div>
+        {% endif %}
+
+        <form method="post" action="/registro">
+            <div class="form-group">
+                <label for="reg_nombre">Nombre de Usuario:</label>
+                <input type="text" id="reg_nombre" name="reg_nombre" placeholder="Elige tu nombre de usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg_telefono">Teléfono:</label>
+                <input type="tel" id="reg_telefono" name="reg_telefono" placeholder="Tu número de teléfono" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg_correo">Correo Electrónico:</label>
+                <input type="email" id="reg_correo" name="reg_correo" placeholder="Tu correo electrónico" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg_password">Contraseña:</label>
+                <input type="password" id="reg_password" name="reg_password" placeholder="Crea una contraseña (mín. 4 caracteres)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg_password_confirm">Confirmar Contraseña:</label>
+                <input type="password" id="reg_password_confirm" name="reg_password_confirm" placeholder="Confirma tu contraseña" required>
+            </div>
+
+            <button type="submit">Registrarse</button>
+        </form>
+
+        <div class="back-link">
+            <p style="color: #ccc; font-size: 14px; margin-bottom: 10px;">¿Ya tienes cuenta?</p>
+            <a href="/">Vuelve al Login</a>
+        </div>
+    </div>
+
+</body>
+</html>
